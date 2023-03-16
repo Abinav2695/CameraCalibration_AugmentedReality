@@ -1,6 +1,6 @@
 /* Abinav Anantharaman and Satwik Bhandiwad
    CS 5330 Spring 2023
-   Main File
+   Calibration Functions
    Source file
 */
 
@@ -16,8 +16,7 @@
 #include "calib.h"
 
 
-int main()
-{
-    return 0;
-}
+
+
+
 
