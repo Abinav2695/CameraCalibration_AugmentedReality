@@ -13,8 +13,18 @@
 using namespace cv;
 using namespace std;
 
-const float sqDimension = 0.034f;
-const Size boardDimension = Size(6,9);
+const float sqDimension = 0.03f;
+const Size boardDimension = Size(9,6);
+
+
+// std::string IMAGE_FOLDER_PATH = "/CameraCalibration_AugmentedReality/calib_images/";
+std::string IMAGE_FOLDER_PATH = "/CameraCalibration_AugmentedReality/images/";
+// int image_number[26] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26};
+int image_number[22] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22};
+
+std::string file_path = __FILE__;
+std::string PROJECT_FOLDER_PATH = file_path.substr(0, file_path.rfind("/CameraCalibration_AugmentedReality"));
+
 
 void generateKnownBoardPos(Size boardSize, float sqEdgeLength, vector<Point3f> &corners) {
     for(int i=0; i<boardSize.height; i++) {
@@ -25,42 +35,44 @@ void generateKnownBoardPos(Size boardSize, float sqEdgeLength, vector<Point3f> &
     }
 }
 
-void getBoardCorners(vector<Mat> images, vector<vector<Point2f> > &foundCorners, bool showRes) {
+void getBoardCorners(vector<Mat> &images, vector<vector<Point2f> > &foundCorners, bool showRes) {
 
-    for(vector<Mat>::iterator it = images.begin(); it!= images.end(); it++) {
+    for(auto img:images) {
         vector<Point2f> pointBuf;
-        bool found = findChessboardCorners(*it, Size(9,6), pointBuf, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+        bool found = findChessboardCorners(img, boardDimension, pointBuf, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
         if(found) {
             foundCorners.push_back(pointBuf);
         }
         if(showRes) {
-            drawChessboardCorners(*it, Size(6,9),  pointBuf, found);
-            imshow("corners", *it);
+            drawChessboardCorners(img, boardDimension,  pointBuf, found);
+            imshow("corners", img);
             waitKey(0); 
         }
     }
 
 }
 
-void cameraCalibration(vector<Mat> calibrationImages, Size boardSize, float sqEdgeLength, Mat &cameraMatrix, Mat &distCoefficients){
+void cameraCalibration(vector<Mat> &calibrationImages, Size boardSize, float sqEdgeLength, Mat &cameraMatrix, Mat &distCoefficients){
 
-   vector<vector<Point2f>>  boardImageSpacePoints;
+    vector<vector<Point2f>>  boardImageSpacePoints;
 
-   getBoardCorners(calibrationImages, boardImageSpacePoints, false);
+    getBoardCorners(calibrationImages, boardImageSpacePoints, true);
 
-   vector<vector<Point3f>> worldSpaceCornerPoints(1);
+    vector<vector<Point3f>> worldSpaceCornerPoints(1);
 
-   generateKnownBoardPos(boardSize, sqEdgeLength, worldSpaceCornerPoints[0]);
+    generateKnownBoardPos(boardSize, sqEdgeLength, worldSpaceCornerPoints[0]);
 
-   worldSpaceCornerPoints.resize(boardImageSpacePoints.size(),worldSpaceCornerPoints[0]);
+    worldSpaceCornerPoints.resize(boardImageSpacePoints.size(),worldSpaceCornerPoints[0]);
 
-   vector<Mat> rVecs, tVecs;
+    vector<Mat> rVecs, tVecs;
 
-   distCoefficients = Mat::zeros(8, 1, CV_64F);
+    //    distCoefficients = Mat::zeros(8, 1, CV_64F);
 
-   //CV_CALIB_ZERO_TANGENT_DIST
-   double rms = calibrateCamera(worldSpaceCornerPoints, boardImageSpacePoints, boardSize, cameraMatrix, distCoefficients, rVecs, tVecs, CV_CALIB_FIX_ASPECT_RATIO );
-   cout << "Reprojection error: " << rms << endl;
+    //CV_CALIB_ZERO_TANGENT_DIST
+    double rms = calibrateCamera(worldSpaceCornerPoints, boardImageSpacePoints, calibrationImages[0].size(), cameraMatrix, distCoefficients, rVecs, tVecs);
+    std::cout << "Error: " << rms << std::endl;
+    std::cout << "cameraMatrix : " << cameraMatrix << std::endl;
+    std::cout << "distCoeffs : " << distCoefficients << std::endl;
 }
 
 bool saveCameraCalibration(string filename, Mat cameraMatrix, Mat distCoefficients) {
@@ -103,7 +115,8 @@ int main() {
     Mat frame;
     Mat drawToFrame;
 
-    Mat cameraMatrix = Mat::eye(3, 3, CV_64FC1);
+    // Mat cameraMatrix = Mat::eye(3, 3, CV_64FC1);
+    Mat cameraMatrix;
 
     Mat distanceCoefficients;
 
@@ -112,7 +125,7 @@ int main() {
     //vector<vector<Point2f> > markerCorners, rejectedCandidates;
 
 
-    VideoCapture vid(2);
+    VideoCapture vid(0);
 
     if(!vid.isOpened()) {
         cerr << "ERROR: Cannot open webcam" << endl;
@@ -133,9 +146,9 @@ int main() {
         vector<Vec2f> foundPoints;
         bool found = false;
 
-        found = findChessboardCorners(frame, boardDimension, foundPoints, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
-        frame.copyTo(drawToFrame);
-        drawChessboardCorners(drawToFrame , boardDimension, foundPoints, found);
+        // found = findChessboardCorners(frame, boardDimension, foundPoints, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+        // frame.copyTo(drawToFrame);
+        // drawChessboardCorners(drawToFrame , boardDimension, foundPoints, found);
 
         if(found) {
             imshow("Webcam", drawToFrame);
@@ -157,9 +170,7 @@ int main() {
                string filename = to_string(count) + ".jpg";
                imwrite(filename, tmp);
                count++;
-
                cout << savedImages.size() << " Frame saved" << endl;
-
             }
             break;
 
@@ -189,6 +200,24 @@ int main() {
                 break;
             }
                 
+            case 'd':
+            {
+                std::vector<cv::Mat> savedImages;
+                for(auto i:image_number)
+                {
+                    // cap->read(frame); //get new frame
+                    
+                    frame = cv::imread(PROJECT_FOLDER_PATH + IMAGE_FOLDER_PATH + std::to_string(i)+ ".jpg");
+                    if(frame.empty()){
+                        printf("ERROR: Failed to read image");
+                        continue;
+                    }
+                    savedImages.push_back(frame);
+                }
+                cameraCalibration(savedImages, boardDimension, sqDimension, cameraMatrix, distanceCoefficients);
+                saveCameraCalibration("CameraCalibParams", cameraMatrix, distanceCoefficients);
+                break;
+            }
             case 'q':
             //quit
             return 0;

@@ -15,6 +15,8 @@ set(PROJECT_LIBRARIES_DIR libs)
 set(BIN_DIR bin)
 
 set(MAIN ${PROJECT_SRC_DIR}/main.cpp)
+set(CALIB ${PROJECT_SRC_DIR}/calib.cpp)
+
 # set(THRESH ${PROJECT_SRC_DIR}/thresh.cpp)
 # set(MORPH ${PROJECT_SRC_DIR}/morph.cpp)
 # set(SEGMENT ${PROJECT_SRC_DIR}/segmentation.cpp)
@@ -24,6 +26,8 @@ set(MAIN ${PROJECT_SRC_DIR}/main.cpp)
 
 # set(QT_GUI ${PROJECT_SRC_DIR}/qt_gui.cpp)
 # set(WINDOW ${PROJECT_SRC_DIR}/mainwindow.cpp)
+
+set( TEST_NEW ${PROJECT_SRC_DIR}/test_new.cpp)
 
 
 
@@ -47,7 +51,8 @@ include_directories( ${OpenCV_INCLUDE_DIRS} ${PROJECT_INC_DIR} )
 
 # add_executable( main ${MAIN} ${THRESH} ${MORPH} ${SEGMENT} ${MATCH} ${CSV} ${SAVE})
 
-add_executable(main ${MAIN})
+add_executable(main ${MAIN} ${CALIB})
+add_executable(sat_test ${TEST_NEW})
 
 # if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 #     qt_add_executable(qt_gui
@@ -58,6 +63,7 @@ add_executable(main ${MAIN})
 # endif()
 
 target_link_libraries( main ${OpenCV_LIBS} )
+target_link_libraries( sat_test ${OpenCV_LIBS} )
 # target_link_libraries(qt_gui  PUBLIC Qt::Core
 #                                     Qt::Gui
 #                                     Qt::Widgets  ${OpenCV_LIBS})
