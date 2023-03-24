@@ -2,24 +2,33 @@ import cv2
 from cv2 import xfeatures2d
 import numpy as np
 import yaml
+import sys
 
+if len(sys.argv) < 3:
+    print("Error: Too few arguments ...Video Source Number and Yaml File Path required")
+    print("Usage: python3 surf_implementation.py 0 /{Absolute filepath'}.../config.yaml")
+    exit(1)
+else:
+    print("SURF Feature Implementation")
 # Create SURF detector object
 surf = cv2.xfeatures2d.SURF_create()
 surf.setHessianThreshold(1000)
 
 
 # Create video capture object
-cap = cv2.VideoCapture(2)
+cap = cv2.VideoCapture(int(sys.argv[1]))
 
 # Create feature matcher
 matcher = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
 
-with open('/home/exmachina/NEU/SEM-2/PRCV/Assignment/Assgn_4/CameraCalibration_AugmentedReality/calib_params/my_webcam_Calibration_Parameters.yaml', 'r') as file:
+#'/home/exmachina/NEU/SEM-2/PRCV/Assignment/Assgn_4/CameraCalibration_AugmentedReality/calib_params/my_webcam_Calibration_Parameters.yaml'
+with open(sys.argv[2], 'r') as file:
     calib_data = yaml.safe_load(file)
 
 cp = calib_data['camera_matrix']['data']
 
 K = np.array([[cp[0], cp[1], cp[2]],[cp[3], cp[4],cp[5]], [cp[6], cp[7], cp[8]]])
+print('Camera Calibration Matrix :{}'.format(K))
 
 while True:
     # Read a frame from the video stream

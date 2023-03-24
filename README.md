@@ -59,3 +59,10 @@ example -> ./bin/main 2 my_webcam
  'f' : Extension 3 --> draw cubes on multiple aruco markers
  
  'q' : quit command
+
+## To check SURF Functionality go to scripts folder and run SURF_Implementation.py
+```bash
+cd scripts
+python3 surf_implementation.py {video source number} {camera calibration Yaml file path}
+example -> python3 surf_implementation.py 0 /home/MY_PC/..../camera_parameters.yaml
+```
