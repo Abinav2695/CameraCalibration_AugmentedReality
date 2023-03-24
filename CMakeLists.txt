@@ -25,13 +25,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
 set(CMAKE_PREFIX_PATH "/home/exmachina/Qt/6.4.2/gcc_64") #;/usr/include/include/opencv4")
-set(OpenCV_DIR "/usr/include/lib/cmake/opencv4")
+# set(OpenCV_DIR "/usr/include/lib/cmake/opencv4")
 
 #####################################################################
 # DEPENDENCIES
 #####################################################################
 
-find_package(OpenCV 4.7 REQUIRED)
+find_package(OpenCV 4.2 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 message(STATUS "OpenCV_INCLUDE_DIRS = ${OpenCV_INCLUDE_DIRS}")
