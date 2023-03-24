@@ -1,6 +1,6 @@
 /* Abinav Anantharaman and Satwik Bhandiwad
    CS 5330 Spring 2023
-   AR Functions
+   Funtions for projecting AR objects onto chessboard target
    Source file
 */
 
@@ -19,6 +19,16 @@
 #include <utility>  
 #include "augmented_reality.h"
 
+/**
+ * Function to read camera parameters from yaml file
+ *
+ * This function takes yaml filename as input and loads the camera parameters into camera matrix and distCoeff matrix
+ *
+ * @param filename input yaml filepath
+ * @param cameraMatrix  matrix for obtaining camera intrinsic parameters
+ * @param distCoeffs  matrix for obtaining camera distortion coefficients
+ * 
+ */
 void readCameraParameters(std::string filename, cv::Mat &cameraMatrix, cv::Mat &distCoeffs){
     // Load camera param YAML file
     YAML::Node yaml_config = YAML::LoadFile(filename);
@@ -53,6 +63,14 @@ void readCameraParameters(std::string filename, cv::Mat &cameraMatrix, cv::Mat &
     }
 }
 
+/**
+ * Function to project 3D world coordinates onto the image plane 2D.
+ *  
+ * This function takes an image and the ProjectPoints2DConfig type config variable as inputs
+ *
+ * @param image cv::Mat type input image
+ * @param config  ProjectPoints2DConfig configuration variables for the detection
+ */
 void project_world_points_to_image_plane(cv::Mat &image, ProjectPoints2DConfig *config){
     
     cv::Mat cameraMatrix, distCoeffs;
@@ -73,7 +91,13 @@ void project_world_points_to_image_plane(cv::Mat &image, ProjectPoints2DConfig *
 
 
 
-
+/**
+ * Function to draw pyramid structure on a checkerboard
+ *
+ * This function takes an image and the ProjectPoints2DConfig type config variable as inputs
+ * @param image cv::Mat type input image
+ * @param config  ProjectPoints2DConfig  configuration variables for the detection
+ */
 void draw_pyramid(cv::Mat &image, ProjectPoints2DConfig *config){
 
     config ->pointsToProjectOnImagePlane.push_back(config->worldCornerPoints[13]);
@@ -96,6 +120,15 @@ void draw_pyramid(cv::Mat &image, ProjectPoints2DConfig *config){
 
 }
 
+/**
+ * Function to draw 3D spatuala on the checkerboard
+ *
+ * This function takes an image and the ProjectPoints2DConfig type config variable as inputs
+ *
+ * @param image cv::Mat type input image
+ * @param config ProjectPoints2DConfig configuration variables for the detection
+ *
+ */
 void draw_spatula(cv::Mat &image, ProjectPoints2DConfig *config){
 
     config ->pointsToProjectOnImagePlane.push_back(config->worldCornerPoints[18]); //0

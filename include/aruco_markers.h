@@ -26,5 +26,6 @@ typedef struct{
 void detect_aruco_markers(cv::Mat &image, ArucoDetectionConfig *config);
 void detect_camera_pose_aruco(cv::Mat& image, ArucoDetectionConfig *config);
 void draw_shape_on_multiple_targets(cv::Mat& image, ArucoDetectionConfig *config);
+void draw_cube(cv::Mat &image, cv::Scalar color, std::vector<cv::Point2f> imagePoints);
 
 #endif

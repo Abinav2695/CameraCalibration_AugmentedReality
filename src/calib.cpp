@@ -20,6 +20,16 @@
 
 using namespace std;
 
+
+/**
+ * Function to generate a vector of known world coordinates on the checkerboard
+ *
+ * This function takes the edge length of the checkerboard squares, vector of 3D world coordinates and Board dimensions as input
+ *
+ * @param sqEdgeLength edge length of the checkerboard squares
+ * @param worldPoints  vector to store the world coordinates
+ * @param boardSize mxn size of the board
+ */
 void generateKnownBoardPos(float sqEdgeLength, vector<cv::Point3f> &worldPoints, cv::Size boardSize) {
     for(int i=0; i<boardSize.height; i++) {
         for(int j=0; j<boardSize.width; j++) {
@@ -28,7 +38,19 @@ void generateKnownBoardPos(float sqEdgeLength, vector<cv::Point3f> &worldPoints,
     }
 }
 
-
+/**
+ * Function to find checkerboard corners in an image
+ *
+ * This function takes the edge length of the checkerboard squares, vector of 3D world coordinates and Board dimensions as input
+ *
+ * @param image input image
+ * @param drawFrame  image on which to draw the checkerboard corners
+ * @param corners vector of 2D image coordinates to store the board corners
+ * @param boardSize mxn size of the board
+ * @param show_corners draw the board corners if true else dont draw them
+ * 
+ * @return true if all corners are found else false
+ */
 bool find_corners(cv::Mat &image, cv::Mat &drawFrame, vector<cv::Point2f> &corners, cv::Size boardSize, bool show_corners){
     drawFrame = image.clone();
     bool found = cv::findChessboardCorners(image, boardSize, corners, 
@@ -38,6 +60,21 @@ bool find_corners(cv::Mat &image, cv::Mat &drawFrame, vector<cv::Point2f> &corne
     return true;
 }
 
+/**
+ * Function to write camera properties to a yaml file
+ *
+ * This function takes filepath, camera intrinsics, distortion coefficients , camera model, camera resolution and reprojection error as input
+ * 
+ * @param fileName yaml file path
+ * @param cameraMatrix  camera intrinsics matrix
+ * @param distCoeffs distortion coefficients vector
+ * @param cameraName camera model
+ * @param cameraResolution camera resolution cv::Size(w,h)
+ * @param reprojection_error reprojection error of calibration
+ * @param reset_file flag to reset the file while loading camera parameters
+ * 
+ * @return 0
+ */
 int write_camera_properties_to_file(std::string fileName, cv::Mat cameraMatrix, cv::Mat distCoeffs, 
                                     std::string cameraName, cv::Size cameraResolution, double reprojection_error, 
                                     int reset_file) {
@@ -144,7 +181,25 @@ int write_camera_properties_to_file(std::string fileName, cv::Mat cameraMatrix, 
     return 0;
 }
 
-int save_calibration(std::vector<cv::Mat> &calibImages, std::string cameraName, cv::Size boardSize, float sqEdgeLength, std::string fileName, bool printCalibrationData){
+
+/**
+ * Function to perform calibration of the camera
+ *
+ * This function performs the calibration of the camera and then calls write_camera_properties_to_file function to save the calibration results to yaml file
+ * 
+ * @param calibImages vector of images for calibration
+ * @param cameraName  camera model
+ * @param boardSize mxn size of the checkered board
+ * @param sqEdgeLength length of the edge of the checkered board squares
+ * @param fileName yaml file path to store calibration results
+ * @param printCalibrationData prints the calibration results if set
+ * 
+ * @return 0
+ */
+int save_calibration(std::vector<cv::Mat> &calibImages, 
+                        std::string cameraName, cv::Size boardSize, 
+                        float sqEdgeLength, std::string fileName, 
+                        bool printCalibrationData){
 
     vector<cv::Point3f> point_set;
     vector<std::vector<cv::Point3f> > point_list;
@@ -187,8 +242,8 @@ int save_calibration(std::vector<cv::Mat> &calibImages, std::string cameraName, 
         std::cout << "Reprojection Error: " << reprojectionError << std::endl;
         std::cout << "Camera Matrix : " << cameraMatrix << std::endl;
         std::cout << "Dist Coeffs : " << distCoeffs << std::endl;
-        // std::cout << "Rotation vector : " << R << std::endl;
-        // std::cout << "Translation vector : " << T << std::endl;
+        std::cout << "Rotation vector : " << R << std::endl;
+        std::cout << "Translation vector : " << T << std::endl;
     }
 
     write_camera_properties_to_file(fileName, cameraMatrix, distCoeffs, cameraName, cv::Size(frame.cols,frame.rows), reprojectionError,1);

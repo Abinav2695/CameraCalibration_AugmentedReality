@@ -21,7 +21,14 @@
 #include <cmath>
 #include "aruco_markers.h"
 
-
+/**
+ * Function to detect aruco markers and draw ids and bounding boxes on the image
+ *
+ * This function takes an image and the ArucoDetectionConfig type config variable as inputs
+ * @param image cv::Mat type input image
+ * @param config  ArucoDetectionConfig configuration variables for the detection
+ *
+ */
 void detect_aruco_markers(cv::Mat &image, ArucoDetectionConfig *config){
 
     cv::aruco::DetectorParameters detectorParams = cv::aruco::DetectorParameters();
@@ -45,6 +52,15 @@ void detect_aruco_markers(cv::Mat &image, ArucoDetectionConfig *config){
 
 }
 
+/**
+ * Function to detect camera pose based of Aruco Board detection
+ *
+ * This function takes an image and the ArucoDetectionConfig type config variable as inputs
+ *
+ * @param image cv::Mat type input image
+ * @param config  ArucoDetectionConfig configuration variables for the detection
+ *
+ */
 void detect_camera_pose_aruco(cv::Mat& image, ArucoDetectionConfig *config){
 
     cv::aruco::DetectorParameters detectorParams = cv::aruco::DetectorParameters();
@@ -58,11 +74,6 @@ void detect_camera_pose_aruco(cv::Mat& image, ArucoDetectionConfig *config){
     }
     cv::aruco::ArucoDetector detector(dictionary, detectorParams);
     cv::Ptr<cv::aruco::GridBoard> board = new cv::aruco::GridBoard(cv::Size(7,5), 0.04, 0.01, dictionary);
-    // cv::Mat img1;
-    // board->generateImage(cv::Size(640,480), img1, 5);
-    // cv::imshow("Board", img1);
-    // cv::waitKey(0);
-    // cv::destroyAllWindows();
 
     // Detect markers
     detector.detectMarkers(image, config->corners, config->ids);
@@ -79,14 +90,12 @@ void detect_camera_pose_aruco(cv::Mat& image, ArucoDetectionConfig *config){
         // Find pose
         cv::solvePnP(objPoints, imgPoints, config->cameraMatrix, config->distCoeffs, rvec, tvec);
         cv::Mat rotMat, eulerAngles;
-
-        cv::Rodrigues(rvec, rotMat);
-        
-        cv::Rodrigues(rotMat, eulerAngles, cv::noArray());
+        cv::Rodrigues(rvec, rotMat); //rotation vector to rotation matrix
+        cv::Rodrigues(rotMat, eulerAngles, cv::noArray()); //rotation matrix to euler angles
         eulerAngles*= 180/CV_PI;
 
-        std::cout << "Rotation Angles: " << eulerAngles << std::endl;
-        std::cout << "Tvec: " << tvec << std::endl;
+        std::cout << "Aruco Marker Rotation (Euler Angles): " << eulerAngles << std::endl;
+        std::cout << "Aruco Marker Translation Vector: " << tvec << std::endl;
 
         // If at least one board marker detected
         int markersOfBoardDetected = (int)objPoints.total() / 4;
@@ -97,15 +106,6 @@ void detect_camera_pose_aruco(cv::Mat& image, ArucoDetectionConfig *config){
         std::vector<cv::Point3f> pointsToProjectOnImagePlane;
         std::vector<cv::Point2f> outputImagePoints;
         pointsToProjectOnImagePlane.push_back(cv::Point3f(0.050f,0.05f,-0.100f));
-        // pointsToProjectOnImagePlane.push_back(config->worldCornerPoints[22]);
-        // pointsToProjectOnImagePlane.push_back(config->worldCornerPoints[30]);
-        // pointsToProjectOnImagePlane.push_back(config->worldCornerPoints[32]);
-        // for (int i=0; i< pointsToProjectOnImagePlane.size();++i){
-        //     config->pointsToProjectOnImagePlane[i].z = 0.050;
-        // }
-        // cv::Point3f top_point = config->worldCornerPoints[22];
-        // top_point.z = 0.100;
-        // config ->pointsToProjectOnImagePlane.push_back(top_point);
         cv::projectPoints(pointsToProjectOnImagePlane, rvec, tvec, config->cameraMatrix, config->distCoeffs, outputImagePoints);
         for (auto point : outputImagePoints) cv::circle(image, point, 4, cv::Scalar(0,0,255), -1);
         
@@ -113,6 +113,15 @@ void detect_camera_pose_aruco(cv::Mat& image, ArucoDetectionConfig *config){
 
 }   
 
+/**
+ * Function to draw a 3D cube on aruco markers anchored at the center
+ *
+ * This function takes an image, colour of the cube and image points required to draw cube
+ *
+ * @param image cv::Mat type input image
+ * @param color  cv::Scalar type colour value for drawing cube
+ * @param imagePoints Image points required to draw the cube
+ */
 void draw_cube(cv::Mat &image, cv::Scalar color, std::vector<cv::Point2f> imagePoints){
 
 
@@ -134,6 +143,15 @@ void draw_cube(cv::Mat &image, cv::Scalar color, std::vector<cv::Point2f> imageP
     cv::line(image, imagePoints[7], imagePoints[9],color, 2, cv::LINE_AA);
 }
 
+
+/**
+ * Function to draw a 3D cube on multiple aruco markers of multiple families
+ *
+ * This function takes an image and ArucoDetectionConfig type config variable as inputs
+ *
+ * @param image cv::Mat type input image
+ * @param config  ArucoDetectionConfig config variables
+ */
 void draw_shape_on_multiple_targets(cv::Mat& image, ArucoDetectionConfig *config){
 
     for (auto family : config->multiFamilies){
@@ -147,13 +165,6 @@ void draw_shape_on_multiple_targets(cv::Mat& image, ArucoDetectionConfig *config
             default: dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_36h11); break;
         }
         cv::aruco::ArucoDetector detector(dictionary, detectorParams);
-        // cv::Ptr<cv::aruco::GridBoard> board = new cv::aruco::GridBoard(cv::Size(7,5), 0.04, 0.01, dictionary);
-        // cv::Mat img1;
-        // board->generateImage(cv::Size(640,480), img1, 5);
-        // cv::imshow("Board", img1);
-        // cv::waitKey(0);
-        // cv::destroyAllWindows();
-
         // Detect markers
         detector.detectMarkers(image, config->corners, config->ids);
 
@@ -183,7 +194,8 @@ void draw_shape_on_multiple_targets(cv::Mat& image, ArucoDetectionConfig *config
                 std::cout << "Translation Vector: " << tvec << std::endl;
                 // if(config->draw_markers) cv::drawFrameAxes(image, config->cameraMatrix, config->distCoeffs, rvec, tvec, 0.1);
 
-                
+
+                // World coordinates required to draw cube relative to aruco marker center    
                 std::vector<cv::Point3f> pointsToProjectOnImagePlane;
                 std::vector<cv::Point2f> outputImagePoints;
 
@@ -200,80 +212,14 @@ void draw_shape_on_multiple_targets(cv::Mat& image, ArucoDetectionConfig *config
                 pointsToProjectOnImagePlane.push_back(cv::Point3f(sideLength,-sideLength,0.05f));
                 pointsToProjectOnImagePlane.push_back(cv::Point3f(-sideLength,sideLength,0.05f));
 
+                // Finding corresponding image coordinates of the world 3D points
                 cv::projectPoints(pointsToProjectOnImagePlane, rvec, tvec, config->cameraMatrix, config->distCoeffs, outputImagePoints);
                 // for (auto point : outputImagePoints) cv::circle(image, point, 4, cv::Scalar(0,0,255), -1);
                 cv::Scalar color;
                 color = family == FAMILY_25h9 ? cv::Scalar(255,0,0) : cv::Scalar(0,0,255);
-                draw_cube(image, color,outputImagePoints);
-                
+                draw_cube(image, color,outputImagePoints); //draw cube
             }
         }
     }
     
 }
-
-// int main()
-// {
-//     // Set the dictionary to use
-//     cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_APRILTAG_25h9 );
-
-//     // Define the grid board
-//     cv::Size2f square_size(0.06f, 0.06f); // size of each square in meters
-//     cv::Size2i board_size(4, 2); // number of squares in each row and column
-//     float spacing = 0.03f; // spacing between squares in meters
-//     cv::Ptr<cv::aruco::GridBoard> gridboard = cv::aruco::GridBoard::create(4, 2, 0.06f, 0.02f, dictionary);
-
-//     cv::Mat boardImage;
-//     gridboard->draw(cv::Size(1280, 720), boardImage, 10, 1);
-
-//     // Print the board information
-//     std::cout << "Grid board information:" << std::endl;
-//     std::cout << " - number of markers: " << gridboard->getMarkerLength() << std::endl;
-
-//     cv::imshow("Frame", boardImage);
-//     cv::imwrite("36h11_markers.png", boardImage);
-//     char key = cv::waitKey(0);
-//     cv::destroyAllWindows();
-//     return 0;
-// }
-
-
-
-// cv::VideoCapture inputVideo;
-// inputVideo.open(0);
-// cv::Mat cameraMatrix, distCoeffs;
-// // You can read camera parameters from tutorial_camera_params.yml
-// readCameraParameters(filename, cameraMatrix, distCoeffs);  // This function is implemented in aruco_samples_utility.hpp
-// cv::aruco::Dictionary dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_6X6_250);
-// // To use tutorial sample, you need read custom dictionaty from tutorial_dict.yml
-// readDictionary(filename, dictionary); // This function is implemented in opencv/modules/objdetect/src/aruco/aruco_dictionary.cpp
-// cv::Ptr<cv::aruco::GridBoard> board = cv::aruco::GridBoard::create(5, 7, 0.04, 0.01, dictionary);
-// cv::aruco::DetectorParameters detectorParams = cv::aruco::DetectorParameters();
-// cv::aruco::ArucoDetector detector(dictionary, detectorParams);
-// while (inputVideo.grab()) {
-//     cv::Mat image, imageCopy;
-//     inputVideo.retrieve(image);
-//     image.copyTo(imageCopy);
-//     std::vector<int> ids;
-//     std::vector<std::vector<cv::Point2f> > corners;
-//     // Detect markers
-//     detector.detectMarkers(image, corners, ids);
-//     // If at least one marker detected
-//     if (ids.size() > 0) {
-//         cv::aruco::drawDetectedMarkers(imageCopy, corners, ids);
-//         cv::Vec3d rvec, tvec;
-//         // Get object and image points for the solvePnP function
-//         cv::Mat objPoints, imgPoints;
-//         board->matchImagePoints(corners, ids, objPoints, imgPoints);
-//         // Find pose
-//         cv::solvePnP(objPoints, imgPoints, cameraMatrix, distCoeffs, rvec, tvec);
-//         // If at least one board marker detected
-//         markersOfBoardDetected = (int)objPoints.total() / 4;
-//         if(markersOfBoardDetected > 0)
-//             cv::drawFrameAxes(imageCopy, cameraMatrix, distCoeffs, rvec, tvec, 0.1);
-//     }
-//     cv::imshow("out", imageCopy);
-//     char key = (char) cv::waitKey(waitTime);
-//     if (key == 27)
-//         break;
-// }
