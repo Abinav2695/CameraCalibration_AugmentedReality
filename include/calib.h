@@ -7,7 +7,10 @@
 #define CALIB_H
 
 
-int find_corners(cv::Mat &image, cv::Mat &image_corners, std::vector<cv::Point2f> &corners, cv::Size patternSize);
-void generateKnownBoardPos(float sqEdgeLength, std::vector<cv::Point3f> &corners, cv::Size patternSize);
-
+bool find_corners(cv::Mat &image, cv::Mat &drawFrame, std::vector<cv::Point2f> &corners, cv::Size boardSize, bool show_corners);
+void generateKnownBoardPos(float sqEdgeLength, std::vector<cv::Point3f> &worldPoints, cv::Size boardSize);
+int save_calibration(std::vector<cv::Mat> &calibImages, std::string cameraName, cv::Size boardSize, float sqEdgeLength, std::string fileName, bool printCalibrationData);
+int write_camera_properties_to_file(std::string fileName, cv::Mat cameraMatrix, cv::Mat distCoeffs, 
+                                    std::string cameraName, cv::Size cameraResolution, double reprojection_error, 
+                                    int reset_file);
 #endif

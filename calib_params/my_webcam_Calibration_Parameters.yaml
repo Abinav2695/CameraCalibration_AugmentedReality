@@ -1,0 +1,13 @@
+image_width:  1280
+image_height:  720
+camera_name:  my_webcam
+reprojection_error:  0.442412
+camera_matrix:
+  rows:  3
+  cols:  3
+  data:  [1484.5261,0.0000,614.0283,0.0000,1484.5261,343.0494,0.0000,0.0000,1.0000]
+distortion_model:  plum_bob
+distortion_coefficients:
+  rows:  1
+  cols:  5
+  data:  [-0.8073,1.4168,0.0009,-0.0024,-1.7361]

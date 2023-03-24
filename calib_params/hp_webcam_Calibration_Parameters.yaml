@@ -1,0 +1,13 @@
+image_width:  640
+image_height:  480
+camera_name:  hp_webcam
+reprojection_error:  0.262084
+camera_matrix:
+  rows:  3
+  cols:  3
+  data:  [621.6148,0.0000,317.8437,0.0000,621.6148,214.1390,0.0000,0.0000,1.0000]
+distortion_model:  plum_bob
+distortion_coefficients:
+  rows:  1
+  cols:  5
+  data:  [-0.0594,0.8928,-0.0013,-0.0009,-2.5855]

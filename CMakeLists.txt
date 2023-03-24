@@ -16,54 +16,30 @@ set(BIN_DIR bin)
 
 set(MAIN ${PROJECT_SRC_DIR}/main.cpp)
 set(CALIB ${PROJECT_SRC_DIR}/calib.cpp)
-
-# set(THRESH ${PROJECT_SRC_DIR}/thresh.cpp)
-# set(MORPH ${PROJECT_SRC_DIR}/morph.cpp)
-# set(SEGMENT ${PROJECT_SRC_DIR}/segmentation.cpp)
-# set(MATCH ${PROJECT_SRC_DIR}/match_feature.cpp)
-# set(SAVE ${PROJECT_SRC_DIR}/save_feature.cpp)
-# set(CSV ${PROJECT_SRC_DIR}/csv_utils.cpp)
-
-# set(QT_GUI ${PROJECT_SRC_DIR}/qt_gui.cpp)
-# set(WINDOW ${PROJECT_SRC_DIR}/mainwindow.cpp)
-
-set( TEST_NEW ${PROJECT_SRC_DIR}/test_new.cpp)
+set(AR ${PROJECT_SRC_DIR}/augmented_reality.cpp)
+set(ARUCO ${PROJECT_SRC_DIR}/aruco_markers.cpp)
 
 
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
-set(CMAKE_PREFIX_PATH "/home/exmachina/Qt/6.4.2/gcc_64")
-
+set(CMAKE_PREFIX_PATH "/home/exmachina/Qt/6.4.2/gcc_64") #;/usr/include/include/opencv4")
+set(OpenCV_DIR "/usr/include/lib/cmake/opencv4")
 
 #####################################################################
 # DEPENDENCIES
 #####################################################################
 
-find_package( OpenCV REQUIRED )
-# find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Gui Widgets)
-# find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(OpenCV 4.7 REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
-# qt_standard_project_setup()
+message(STATUS "OpenCV_INCLUDE_DIRS = ${OpenCV_INCLUDE_DIRS}")
+message(STATUS "OpenCV_DIR ${OpenCV_DIR}")
 
-include_directories( ${OpenCV_INCLUDE_DIRS} ${PROJECT_INC_DIR} )
 
-# add_executable( main ${MAIN} ${THRESH} ${MORPH} ${SEGMENT} ${MATCH} ${CSV} ${SAVE})
+include_directories( ${OpenCV_INCLUDE_DIRS} ${YAML_CPP_INCLUDE_DIR} ${PROJECT_INC_DIR} )
 
-add_executable(main ${MAIN} ${CALIB})
-add_executable(sat_test ${TEST_NEW})
+add_executable(main ${MAIN} ${CALIB} ${AR} ${ARUCO})
 
-# if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-#     qt_add_executable(qt_gui
-#         MANUAL_FINALIZATION
-#         ${QT_GUI} ${WINDOW} ${PROJECT_INC_DIR}/mainwindow.h ${THRESH} ${MORPH} ${SEGMENT} ${MATCH} ${CSV} ${SAVE}
-#     )
-
-# endif()
-
-target_link_libraries( main ${OpenCV_LIBS} )
-target_link_libraries( sat_test ${OpenCV_LIBS} )
-# target_link_libraries(qt_gui  PUBLIC Qt::Core
-#                                     Qt::Gui
-#                                     Qt::Widgets  ${OpenCV_LIBS})
+target_link_libraries( main ${OpenCV_LIBS} ${YAML_CPP_LIBRARIES})
